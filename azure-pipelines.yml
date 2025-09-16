@@ -50,6 +50,9 @@ stages:
             ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
             ARM_TENANT_ID: $(ARM_TENANT_ID)
             ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+        - publish: terraform.tfstate
+          artifact: dev_state
+
 # -------------------------------
 # Stage 3: Deploy Staging Environment
 # -------------------------------
@@ -129,6 +132,8 @@ stages:
             ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
             ARM_TENANT_ID: $(ARM_TENANT_ID)
             ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+        - download: current
+          artifact: dev_state
 
 # # -------------------------------
 # # Stage 6: Destroy Staging Environment (Approval Required)
