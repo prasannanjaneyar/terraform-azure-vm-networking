@@ -5,10 +5,11 @@ trigger:
       - main
 
 variables:
-  ARM_CLIENT_ID: $(ARM_CLIENT_ID)
-  ARM_TENANT_ID: $(ARM_TENANT_ID)
-  ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
-  ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET) # Optional if using OIDC
+- group: TerraformSecrets
+  #ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+  #ARM_TENANT_ID: $(ARM_TENANT_ID)
+  #ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+  #ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET) # Optional if using OIDC
   #ARM_USE_OIDC: true
 
 stages:
@@ -53,12 +54,12 @@ stages:
             terraform plan -var-file=envs/dev.tfvars -out=tfplan
             terraform apply -auto-approve tfplan
           displayName: 'Terraform Apply (Dev)'
-          env:
-            ARM_CLIENT_ID: $(ARM_CLIENT_ID)
-            ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-            ARM_TENANT_ID: $(ARM_TENANT_ID)
-            ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
-            #ARM_USE_OIDC: true
+          # env:
+          #   ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+          #   ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+          #   ARM_TENANT_ID: $(ARM_TENANT_ID)
+          #   ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+          #   #ARM_USE_OIDC: true
 
 # -------------------------------
 # Stage 3: Deploy Staging Environment
@@ -80,12 +81,12 @@ stages:
             terraform plan -var-file=envs/staging.tfvars -out=tfplan
             terraform apply -auto-approve tfplan
           displayName: 'Terraform Apply (Staging)'
-          env:
-            ARM_CLIENT_ID: $(ARM_CLIENT_ID)
-            ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-            ARM_TENANT_ID: $(ARM_TENANT_ID)
-            ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
-            #ARM_USE_OIDC: true
+          # env:
+          #   ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+          #   ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+          #   ARM_TENANT_ID: $(ARM_TENANT_ID)
+          #   ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+          #   #ARM_USE_OIDC: true
 
 # -------------------------------
 # Stage 4: Deploy Prod Environment
@@ -107,12 +108,12 @@ stages:
             terraform plan -var-file=envs/prod.tfvars -out=tfplan
             terraform apply -auto-approve tfplan
           displayName: 'Terraform Apply (Prod)'
-          env:
-            ARM_CLIENT_ID: $(ARM_CLIENT_ID)
-            ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-            ARM_TENANT_ID: $(ARM_TENANT_ID)
-            ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
-            #ARM_USE_OIDC: true
+          # env:
+          #   ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+          #   ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+          #   ARM_TENANT_ID: $(ARM_TENANT_ID)
+          #   ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+          #   #ARM_USE_OIDC: true
 
 # # -------------------------------
 # # Stage 5: Destroy Dev Environment (Approval Required)
