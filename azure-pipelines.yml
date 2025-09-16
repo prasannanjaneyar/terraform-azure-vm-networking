@@ -3,15 +3,6 @@ trigger:
   branches:
     include:
       - main
-
-variables:
-- group: TerraformSecrets
-  ARM_CLIENT_ID: $(ARM_CLIENT_ID)
-  ARM_TENANT_ID: $(ARM_TENANT_ID)
-  ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
-  ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET) # Optional if using OIDC
-  ARM_USE_OIDC: true
-
 stages:
 
 # -------------------------------
@@ -59,8 +50,6 @@ stages:
             ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
             ARM_TENANT_ID: $(ARM_TENANT_ID)
             ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
-          #   #ARM_USE_OIDC: true
-
 # -------------------------------
 # Stage 3: Deploy Staging Environment
 # -------------------------------
@@ -86,7 +75,6 @@ stages:
             ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
             ARM_TENANT_ID: $(ARM_TENANT_ID)
             ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
-          #   #ARM_USE_OIDC: true
 
 # -------------------------------
 # Stage 4: Deploy Prod Environment
