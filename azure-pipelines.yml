@@ -61,41 +61,11 @@ stages:
             #ARM_USE_OIDC: true
 
 # -------------------------------
-# Stage 3: Destroy Dev Environment (Approval Required)
-# -------------------------------
-- stage: Destroy_Dev
-  displayName: "Destroy Dev Environment"
-  dependsOn: Deploy_Dev
-  approval:
-    - approvals:
-        - type: Manual
-          reviewer: prasanndevopsr@gmail.com  # Replace with approver
-  jobs:
-    - job: terraform_destroy_dev
-      pool:
-        vmImage: 'ubuntu-latest'
-      steps:
-        - checkout: self
-        - task: TerraformInstaller@1
-          inputs:
-            terraformVersion: '1.7.5'
-        - script: |
-            terraform init
-            terraform destroy -var-file=envs/dev.tfvars -auto-approve
-          displayName: 'Terraform Destroy (Dev)'
-          env:
-            ARM_CLIENT_ID: $(ARM_CLIENT_ID)
-            ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-            ARM_TENANT_ID: $(ARM_TENANT_ID)
-            ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
-            #ARM_USE_OIDC: true
-
-# -------------------------------
-# Stage 4: Deploy Staging Environment
+# Stage 3: Deploy Staging Environment
 # -------------------------------
 - stage: Deploy_Staging
   displayName: "Deploy Staging Environment"
-  dependsOn: Destroy_Dev
+  dependsOn: Deploy_Dev
   jobs:
     - job: terraform_staging
       pool:
@@ -118,41 +88,11 @@ stages:
             #ARM_USE_OIDC: true
 
 # -------------------------------
-# Stage 5: Destroy Staging Environment (Approval Required)
-# -------------------------------
-- stage: Destroy_Staging
-  displayName: "Destroy Staging Environment"
-  dependsOn: Deploy_Staging
-  approval:
-    - approvals:
-        - type: Manual
-          reviewer: prasanndevopsr@gmail.com  # Replace with approver
-  jobs:
-    - job: terraform_destroy_staging
-      pool:
-        vmImage: 'ubuntu-latest'
-      steps:
-        - checkout: self
-        - task: TerraformInstaller@1
-          inputs:
-            terraformVersion: '1.7.5'
-        - script: |
-            terraform init
-            terraform destroy -var-file=envs/staging.tfvars -auto-approve
-          displayName: 'Terraform Destroy (Staging)'
-          env:
-            ARM_CLIENT_ID: $(ARM_CLIENT_ID)
-            ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-            ARM_TENANT_ID: $(ARM_TENANT_ID)
-            ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
-            ARM_USE_OIDC: true
-
-# -------------------------------
-# Stage 6: Deploy Prod Environment
+# Stage 4: Deploy Prod Environment
 # -------------------------------
 - stage: Deploy_Prod
   displayName: "Deploy Prod Environment"
-  dependsOn: Destroy_Staging
+  dependsOn: Deploy_Staging
   jobs:
     - job: terraform_prod
       pool:
@@ -172,6 +112,62 @@ stages:
             ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
             ARM_TENANT_ID: $(ARM_TENANT_ID)
             ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+            #ARM_USE_OIDC: true
+
+# -------------------------------
+# Stage 5: Destroy Dev Environment (Approval Required)
+# -------------------------------
+- stage: Destroy_Dev
+  displayName: "Destroy Dev Environment"
+  dependsOn: Deploy_Prod
+  jobs:
+    - job: terraform_destroy_dev
+      displayName: "Terraform Destroy Dev"
+      environment: Dev  # Set environment in Azure DevOps with approval
+      pool:
+        vmImage: 'ubuntu-latest'
+      steps:
+        - checkout: self
+        - task: TerraformInstaller@1
+          inputs:
+            terraformVersion: '1.7.5'
+        - script: |
+            terraform init
+            terraform destroy -var-file=envs/dev.tfvars -auto-approve
+          displayName: 'Terraform Destroy (Dev)'
+          env:
+            ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+            ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+            ARM_TENANT_ID: $(ARM_TENANT_ID)
+            ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+            #ARM_USE_OIDC: true
+
+# -------------------------------
+# Stage 6: Destroy Staging Environment (Approval Required)
+# -------------------------------
+- stage: Destroy_Staging
+  displayName: "Destroy Staging Environment"
+  dependsOn: Destroy_Dev
+  jobs:
+    - job: terraform_destroy_staging
+      displayName: "Terraform Destroy Staging"
+      environment: Staging  # Set environment in Azure DevOps with approval
+      pool:
+        vmImage: 'ubuntu-latest'
+      steps:
+        - checkout: self
+        - task: TerraformInstaller@1
+          inputs:
+            terraformVersion: '1.7.5'
+        - script: |
+            terraform init
+            terraform destroy -var-file=envs/staging.tfvars -auto-approve
+          displayName: 'Terraform Destroy (Staging)'
+          env:
+            ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+            ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+            ARM_TENANT_ID: $(ARM_TENANT_ID)
+            ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
             ARM_USE_OIDC: true
 
 # -------------------------------
@@ -179,13 +175,11 @@ stages:
 # -------------------------------
 - stage: Destroy_Prod
   displayName: "Destroy Prod Environment"
-  dependsOn: Deploy_Prod
-  approval:
-    - approvals:
-        - type: Manual
-          reviewer: prasanndevopsr@gmail.com  # Replace with approver
+  dependsOn: Destroy_Staging
   jobs:
     - job: terraform_destroy_prod
+      displayName: "Terraform Destroy Prod"
+      environment: Prod  # Set environment in Azure DevOps with approval
       pool:
         vmImage: 'ubuntu-latest'
       steps:
