@@ -110,28 +110,29 @@ stages:
   displayName: "Destroy Dev Environment"
   dependsOn: Deploy_Prod
   jobs:
-    - job: terraform_destroy_dev
+    - deployment: terraform_destroy_dev      # 👈 deployment instead of job
       displayName: "Terraform Destroy Dev"
-      environment: Dev # Manual approval configured in Azure DevOps
-      pool:
-        vmImage: 'ubuntu-latest'
-      steps:
-        - checkout: self
-        - task: TerraformInstaller@1
-          inputs:
-            terraformVersion: '1.7.5'
-        - script: |
-            terraform init -backend-config="resource_group_name=$(TF_BACKEND_RG)" \
-                          -backend-config="storage_account_name=$(TF_BACKEND_STORAGE)" \
-                          -backend-config="container_name=$(TF_BACKEND_CONTAINER)" \
-                          -backend-config="key=dev.terraform.tfstate"
-            terraform destroy -var-file=envs/dev.tfvars -auto-approve
-          displayName: 'Terraform Destroy (Dev)'
-          env:
-            ARM_CLIENT_ID: $(ARM_CLIENT_ID)
-            ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-            ARM_TENANT_ID: $(ARM_TENANT_ID)
-            ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+      environment: Dev                       # 👈 approvals/checks work here
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+              - checkout: self
+              - task: TerraformInstaller@1
+                inputs:
+                  terraformVersion: '1.7.5'
+              - script: |
+                  terraform init -backend-config="resource_group_name=$(TF_BACKEND_RG)" \
+                                -backend-config="storage_account_name=$(TF_BACKEND_STORAGE)" \
+                                -backend-config="container_name=$(TF_BACKEND_CONTAINER)" \
+                                -backend-config="key=dev.terraform.tfstate"
+                  terraform destroy -var-file=envs/dev.tfvars -auto-approve
+                displayName: 'Terraform Destroy (Dev)'
+                env:
+                  ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+                  ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+                  ARM_TENANT_ID: $(ARM_TENANT_ID)
+                  ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
 
 # -------------------------------
 # Stage 5: Destroy Staging (Manual Approval)
