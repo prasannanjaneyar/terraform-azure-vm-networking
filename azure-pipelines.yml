@@ -1,0 +1,86 @@
+trigger:
+- main
+
+stages:
+# -------------------
+# Validate & Plan
+# -------------------
+- stage: Plan
+  jobs:
+  - job: TerraformPlan
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - checkout: self
+    - task: TerraformInstaller@0
+      inputs:
+        terraformVersion: '1.6.6'
+    - script: terraform init
+      displayName: Init
+    - script: terraform validate
+      displayName: Validate
+    - script: terraform plan -var-file=envs/dev.tfvars -out=tfplan
+      displayName: Plan (Dev)
+    - publish: tfplan
+      artifact: tfplan
+
+# -------------------
+# Apply Dev
+# -------------------
+- stage: Dev
+  dependsOn: Plan
+  variables:
+    - group: Dev-Variables
+  jobs:
+  - job: ApplyDev
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - checkout: self
+    - task: TerraformInstaller@0
+      inputs:
+        terraformVersion: '1.6.6'
+    - script: terraform init
+    - download: current
+      artifact: tfplan
+    - script: terraform apply -auto-approve tfplan
+
+# -------------------
+# Apply Staging
+# -------------------
+- stage: Staging
+  dependsOn: Dev
+  variables:
+    - group: Staging-Variables
+  jobs:
+  - job: ApplyStaging
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - checkout: self
+    - task: TerraformInstaller@0
+      inputs:
+        terraformVersion: '1.6.6'
+    - script: terraform init
+    - script: terraform plan -var-file=envs/staging.tfvars -out=tfplan
+    - script: terraform apply -auto-approve tfplan
+
+# -------------------
+# Apply Prod
+# -------------------
+- stage: Prod
+  dependsOn: Staging
+  variables:
+    - group: Prod-Variables
+  jobs:
+  - job: ApplyProd
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - checkout: self
+    - task: TerraformInstaller@0
+      inputs:
+        terraformVersion: '1.6.6'
+    - script: terraform init
+    - script: terraform plan -var-file=envs/prod.tfvars -out=tfplan
+    - script: terraform apply -auto-approve tfplan
