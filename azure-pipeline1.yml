@@ -112,10 +112,9 @@ stages:
   jobs:
     - job: terraform_destroy_dev
       displayName: "Terraform Destroy Dev"
-      environment: Dev
+      environment: Dev # Manual approval configured in Azure DevOps
       pool:
         vmImage: 'ubuntu-latest'
-        #environment: Dev  # Manual approval configured in Azure DevOps
       steps:
         - checkout: self
         - task: TerraformInstaller@1
@@ -145,8 +144,7 @@ stages:
       displayName: "Terraform Destroy Staging"
       environment: Staging
       pool:
-        vmImage: 'ubuntu-latest'
-        
+        vmImage: 'ubuntu-latest' 
       steps:
         - checkout: self
         - task: TerraformInstaller@1
