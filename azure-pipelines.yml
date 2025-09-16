@@ -6,11 +6,11 @@ trigger:
 
 variables:
 - group: TerraformSecrets
-  #ARM_CLIENT_ID: $(ARM_CLIENT_ID)
-  #ARM_TENANT_ID: $(ARM_TENANT_ID)
-  #ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
-  #ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET) # Optional if using OIDC
-  #ARM_USE_OIDC: true
+  ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+  ARM_TENANT_ID: $(ARM_TENANT_ID)
+  ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+  ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET) # Optional if using OIDC
+  ARM_USE_OIDC: true
 
 stages:
 
@@ -54,11 +54,11 @@ stages:
             terraform plan -var-file=envs/dev.tfvars -out=tfplan
             terraform apply -auto-approve tfplan
           displayName: 'Terraform Apply (Dev)'
-          # env:
-          #   ARM_CLIENT_ID: $(ARM_CLIENT_ID)
-          #   ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-          #   ARM_TENANT_ID: $(ARM_TENANT_ID)
-          #   ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+          env:
+            ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+            ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+            ARM_TENANT_ID: $(ARM_TENANT_ID)
+            ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
           #   #ARM_USE_OIDC: true
 
 # -------------------------------
@@ -81,11 +81,11 @@ stages:
             terraform plan -var-file=envs/staging.tfvars -out=tfplan
             terraform apply -auto-approve tfplan
           displayName: 'Terraform Apply (Staging)'
-          # env:
-          #   ARM_CLIENT_ID: $(ARM_CLIENT_ID)
-          #   ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-          #   ARM_TENANT_ID: $(ARM_TENANT_ID)
-          #   ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+          env:
+            ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+            ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+            ARM_TENANT_ID: $(ARM_TENANT_ID)
+            ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
           #   #ARM_USE_OIDC: true
 
 # -------------------------------
