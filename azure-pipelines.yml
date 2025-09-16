@@ -114,86 +114,86 @@ stages:
             ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
             #ARM_USE_OIDC: true
 
-# -------------------------------
-# Stage 5: Destroy Dev Environment (Approval Required)
-# -------------------------------
-- stage: Destroy_Dev
-  displayName: "Destroy Dev Environment"
-  dependsOn: Deploy_Prod
-  jobs:
-    - job: terraform_destroy_dev
-      displayName: "Terraform Destroy Dev"
-      environment: Dev  # Set environment in Azure DevOps with approval
-      pool:
-        vmImage: 'ubuntu-latest'
-      steps:
-        - checkout: self
-        - task: TerraformInstaller@1
-          inputs:
-            terraformVersion: '1.7.5'
-        - script: |
-            terraform init
-            terraform destroy -var-file=envs/dev.tfvars -auto-approve
-          displayName: 'Terraform Destroy (Dev)'
-          env:
-            ARM_CLIENT_ID: $(ARM_CLIENT_ID)
-            ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-            ARM_TENANT_ID: $(ARM_TENANT_ID)
-            ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
-            #ARM_USE_OIDC: true
+# # -------------------------------
+# # Stage 5: Destroy Dev Environment (Approval Required)
+# # -------------------------------
+# - stage: Destroy_Dev
+#   displayName: "Destroy Dev Environment"
+#   dependsOn: Deploy_Prod
+#   jobs:
+#     - job: terraform_destroy_dev
+#       displayName: "Terraform Destroy Dev"
+#       environment: Dev  # Set environment in Azure DevOps with approval
+#       pool:
+#         vmImage: 'ubuntu-latest'
+#       steps:
+#         - checkout: self
+#         - task: TerraformInstaller@1
+#           inputs:
+#             terraformVersion: '1.7.5'
+#         - script: |
+#             terraform init
+#             terraform destroy -var-file=envs/dev.tfvars -auto-approve
+#           displayName: 'Terraform Destroy (Dev)'
+#           env:
+#             ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+#             ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+#             ARM_TENANT_ID: $(ARM_TENANT_ID)
+#             ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+#             #ARM_USE_OIDC: true
 
-# -------------------------------
-# Stage 6: Destroy Staging Environment (Approval Required)
-# -------------------------------
-- stage: Destroy_Staging
-  displayName: "Destroy Staging Environment"
-  dependsOn: Destroy_Dev
-  jobs:
-    - job: terraform_destroy_staging
-      displayName: "Terraform Destroy Staging"
-      environment: Staging  # Set environment in Azure DevOps with approval
-      pool:
-        vmImage: 'ubuntu-latest'
-      steps:
-        - checkout: self
-        - task: TerraformInstaller@1
-          inputs:
-            terraformVersion: '1.7.5'
-        - script: |
-            terraform init
-            terraform destroy -var-file=envs/staging.tfvars -auto-approve
-          displayName: 'Terraform Destroy (Staging)'
-          env:
-            ARM_CLIENT_ID: $(ARM_CLIENT_ID)
-            ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-            ARM_TENANT_ID: $(ARM_TENANT_ID)
-            ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
-            ARM_USE_OIDC: true
+# # -------------------------------
+# # Stage 6: Destroy Staging Environment (Approval Required)
+# # -------------------------------
+# - stage: Destroy_Staging
+#   displayName: "Destroy Staging Environment"
+#   dependsOn: Destroy_Dev
+#   jobs:
+#     - job: terraform_destroy_staging
+#       displayName: "Terraform Destroy Staging"
+#       environment: Staging  # Set environment in Azure DevOps with approval
+#       pool:
+#         vmImage: 'ubuntu-latest'
+#       steps:
+#         - checkout: self
+#         - task: TerraformInstaller@1
+#           inputs:
+#             terraformVersion: '1.7.5'
+#         - script: |
+#             terraform init
+#             terraform destroy -var-file=envs/staging.tfvars -auto-approve
+#           displayName: 'Terraform Destroy (Staging)'
+#           env:
+#             ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+#             ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+#             ARM_TENANT_ID: $(ARM_TENANT_ID)
+#             ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+#             ARM_USE_OIDC: true
 
-# -------------------------------
-# Stage 7: Destroy Prod Environment (Approval Required)
-# -------------------------------
-- stage: Destroy_Prod
-  displayName: "Destroy Prod Environment"
-  dependsOn: Destroy_Staging
-  jobs:
-    - job: terraform_destroy_prod
-      displayName: "Terraform Destroy Prod"
-      environment: Prod  # Set environment in Azure DevOps with approval
-      pool:
-        vmImage: 'ubuntu-latest'
-      steps:
-        - checkout: self
-        - task: TerraformInstaller@1
-          inputs:
-            terraformVersion: '1.7.5'
-        - script: |
-            terraform init
-            terraform destroy -var-file=envs/prod.tfvars -auto-approve
-          displayName: 'Terraform Destroy (Prod)'
-          env:
-            ARM_CLIENT_ID: $(ARM_CLIENT_ID)
-            ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-            ARM_TENANT_ID: $(ARM_TENANT_ID)
-            ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
-            ARM_USE_OIDC: true
+# # -------------------------------
+# # Stage 7: Destroy Prod Environment (Approval Required)
+# # -------------------------------
+# - stage: Destroy_Prod
+#   displayName: "Destroy Prod Environment"
+#   dependsOn: Destroy_Staging
+#   jobs:
+#     - job: terraform_destroy_prod
+#       displayName: "Terraform Destroy Prod"
+#       environment: Prod  # Set environment in Azure DevOps with approval
+#       pool:
+#         vmImage: 'ubuntu-latest'
+#       steps:
+#         - checkout: self
+#         - task: TerraformInstaller@1
+#           inputs:
+#             terraformVersion: '1.7.5'
+#         - script: |
+#             terraform init
+#             terraform destroy -var-file=envs/prod.tfvars -auto-approve
+#           displayName: 'Terraform Destroy (Prod)'
+#           env:
+#             ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+#             ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+#             ARM_TENANT_ID: $(ARM_TENANT_ID)
+#             ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+#             ARM_USE_OIDC: true
