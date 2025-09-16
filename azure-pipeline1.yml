@@ -1,0 +1,194 @@
+trigger:
+  branches:
+    include:
+      - master
+
+variables:
+  ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+  ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+  ARM_TENANT_ID: $(ARM_TENANT_ID)
+  ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+  TF_BACKEND_RG: "tfstate-rg"
+  TF_BACKEND_STORAGE: "tfstatestorageacc234"
+  TF_BACKEND_CONTAINER: "tfstate"
+
+stages:
+
+# -------------------------------
+# Stage 1: Deploy Dev
+# -------------------------------
+- stage: Deploy_Dev
+  displayName: "Deploy Dev Environment"
+  jobs:
+    - job: terraform_apply_dev
+      displayName: "Terraform Apply Dev"
+      pool:
+        vmImage: 'ubuntu-latest'
+      steps:
+        - checkout: self
+        - task: TerraformInstaller@1
+          inputs:
+            terraformVersion: '1.7.5'
+        - script: |
+            terraform init -backend-config="resource_group_name=$(TF_BACKEND_RG)" \
+                          -backend-config="storage_account_name=$(TF_BACKEND_STORAGE)" \
+                          -backend-config="container_name=$(TF_BACKEND_CONTAINER)" \
+                          -backend-config="key=dev.terraform.tfstate"
+            terraform plan -var-file=envs/dev.tfvars -out=tfplan
+            terraform apply tfplan
+          displayName: 'Terraform Apply (Dev)'
+          env:
+            ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+            ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+            ARM_TENANT_ID: $(ARM_TENANT_ID)
+            ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+
+# -------------------------------
+# Stage 2: Deploy Staging
+# -------------------------------
+- stage: Deploy_Staging
+  displayName: "Deploy Staging Environment"
+  dependsOn: Deploy_Dev
+  jobs:
+    - job: terraform_apply_staging
+      displayName: "Terraform Apply Staging"
+      pool:
+        vmImage: 'ubuntu-latest'
+      steps:
+        - checkout: self
+        - task: TerraformInstaller@1
+          inputs:
+            terraformVersion: '1.7.5'
+        - script: |
+            terraform init -backend-config="resource_group_name=$(TF_BACKEND_RG)" \
+                          -backend-config="storage_account_name=$(TF_BACKEND_STORAGE)" \
+                          -backend-config="container_name=$(TF_BACKEND_CONTAINER)" \
+                          -backend-config="key=staging.terraform.tfstate"
+            terraform plan -var-file=envs/staging.tfvars -out=tfplan
+            terraform apply tfplan
+          displayName: 'Terraform Apply (Staging)'
+          env:
+            ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+            ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+            ARM_TENANT_ID: $(ARM_TENANT_ID)
+            ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+
+# -------------------------------
+# Stage 3: Deploy Prod
+# -------------------------------
+- stage: Deploy_Prod
+  displayName: "Deploy Prod Environment"
+  dependsOn: Deploy_Staging
+  jobs:
+    - job: terraform_apply_prod
+      displayName: "Terraform Apply Prod"
+      pool:
+        vmImage: 'ubuntu-latest'
+      steps:
+        - checkout: self
+        - task: TerraformInstaller@1
+          inputs:
+            terraformVersion: '1.7.5'
+        - script: |
+            terraform init -backend-config="resource_group_name=$(TF_BACKEND_RG)" \
+                          -backend-config="storage_account_name=$(TF_BACKEND_STORAGE)" \
+                          -backend-config="container_name=$(TF_BACKEND_CONTAINER)" \
+                          -backend-config="key=prod.terraform.tfstate"
+            terraform plan -var-file=envs/prod.tfvars -out=tfplan
+            terraform apply tfplan
+          displayName: 'Terraform Apply (Prod)'
+          env:
+            ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+            ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+            ARM_TENANT_ID: $(ARM_TENANT_ID)
+            ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+
+# -------------------------------
+# Stage 4: Destroy Dev (Manual Approval)
+# -------------------------------
+- stage: Destroy_Dev
+  displayName: "Destroy Dev Environment"
+  dependsOn: Deploy_Prod
+  jobs:
+    - job: terraform_destroy_dev
+      displayName: "Terraform Destroy Dev"
+      pool:
+        vmImage: 'ubuntu-latest'
+      environment: Dev  # Manual approval configured in Azure DevOps
+      steps:
+        - checkout: self
+        - task: TerraformInstaller@1
+          inputs:
+            terraformVersion: '1.7.5'
+        - script: |
+            terraform init -backend-config="resource_group_name=$(TF_BACKEND_RG)" \
+                          -backend-config="storage_account_name=$(TF_BACKEND_STORAGE)" \
+                          -backend-config="container_name=$(TF_BACKEND_CONTAINER)" \
+                          -backend-config="key=dev.terraform.tfstate"
+            terraform destroy -var-file=envs/dev.tfvars -auto-approve
+          displayName: 'Terraform Destroy (Dev)'
+          env:
+            ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+            ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+            ARM_TENANT_ID: $(ARM_TENANT_ID)
+            ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+
+# -------------------------------
+# Stage 5: Destroy Staging (Manual Approval)
+# -------------------------------
+- stage: Destroy_Staging
+  displayName: "Destroy Staging Environment"
+  dependsOn: Destroy_Dev
+  jobs:
+    - job: terraform_destroy_staging
+      displayName: "Terraform Destroy Staging"
+      pool:
+        vmImage: 'ubuntu-latest'
+      environment: Staging
+      steps:
+        - checkout: self
+        - task: TerraformInstaller@1
+          inputs:
+            terraformVersion: '1.7.5'
+        - script: |
+            terraform init -backend-config="resource_group_name=$(TF_BACKEND_RG)" \
+                          -backend-config="storage_account_name=$(TF_BACKEND_STORAGE)" \
+                          -backend-config="container_name=$(TF_BACKEND_CONTAINER)" \
+                          -backend-config="key=staging.terraform.tfstate"
+            terraform destroy -var-file=envs/staging.tfvars -auto-approve
+          displayName: 'Terraform Destroy (Staging)'
+          env:
+            ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+            ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+            ARM_TENANT_ID: $(ARM_TENANT_ID)
+            ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+
+# -------------------------------
+# Stage 6: Destroy Prod (Manual Approval)
+# -------------------------------
+- stage: Destroy_Prod
+  displayName: "Destroy Prod Environment"
+  dependsOn: Destroy_Staging
+  jobs:
+    - job: terraform_destroy_prod
+      displayName: "Terraform Destroy Prod"
+      pool:
+        vmImage: 'ubuntu-latest'
+      environment: Prod
+      steps:
+        - checkout: self
+        - task: TerraformInstaller@1
+          inputs:
+            terraformVersion: '1.7.5'
+        - script: |
+            terraform init -backend-config="resource_group_name=$(TF_BACKEND_RG)" \
+                          -backend-config="storage_account_name=$(TF_BACKEND_STORAGE)" \
+                          -backend-config="container_name=$(TF_BACKEND_CONTAINER)" \
+                          -backend-config="key=prod.terraform.tfstate"
+            terraform destroy -var-file=envs/prod.tfvars -auto-approve
+          displayName: 'Terraform Destroy (Prod)'
+          env:
+            ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+            ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+            ARM_TENANT_ID: $(ARM_TENANT_ID)
+            ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
